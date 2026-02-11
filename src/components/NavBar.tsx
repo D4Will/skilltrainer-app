@@ -3,29 +3,37 @@ import { useAuth } from "../contexts/useAuth";
 
 const NavBar = () => {
   const auth = useAuth();
+  const authenticated = auth.authenticated;
+  const loaded = auth.loaded;
 
   return (
     <nav className="navbar">
       <Link to="/" className="nav-item">
-        Targets
+        Games
       </Link>
       <Link to="/stats" className="nav-item">
         Statistics
       </Link>
-      <Link to="/login" className="nav-item">
-        Login
-      </Link>
-      <Link to="/register" className="nav-item">
-        Register
-      </Link>
-      <button
-        className="nav-item"
-        onClick={() => {
-          auth.logoutUser();
-        }}
-      >
-        Logout
-      </button>
+      {authenticated && loaded && (
+        <button
+          className="nav-item"
+          onClick={() => {
+            auth.logoutUser();
+          }}
+        >
+          Logout
+        </button>
+      )}
+      {!authenticated && loaded && (
+        <>
+          <Link to="/login" className="nav-item">
+            Login
+          </Link>
+          <Link to="/register" className="nav-item">
+            Register
+          </Link>
+        </>
+      )}
     </nav>
   );
 };

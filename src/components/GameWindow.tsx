@@ -5,40 +5,33 @@ import { useRef, useState } from "react";
 import { submitTargetScore } from "../endpoints/api";
 
 const GameWindow = () => {
-  const [targetAmount, setTargetAmount] = useState(30);
-  const [targetCounter, setTargetCounter] = useState(0);
-  const totalClicksRef = useRef(0);
-  const [xPos, setXPos] = useState(0);
-  const [yPos, setYPos] = useState(0);
-  const [gameStarted, setGameStarted] = useState(false);
-  const [gameEnded, setGameEnded] = useState(false);
-  const startTimeRef = useRef(0);
-  const totalTimeRef = useRef(0);
-  const timePerTargetRef = useRef(0);
+  type gameStatus = "not started" | "started" | "ended";
+  type targetPosition = {
+    xPos: number;
+    yPos: number;
+  };
 
-  function updateTotalClicksRef(
-    clicks: number = totalClicksRef.current + 1,
-  ): void {
-    totalClicksRef.current = clicks;
-  }
+  const [gameStatus, setGameStatus] = useState<gameStatus>("not started");
+  const [targetAmount, setTargetAmount] = useState<number>(30);
+  const [targetCounter, setTargetCounter] = useState<number>(0);
+  const [targetPos, setTargetPos] = useState<targetPosition>({
+    xPos: 45,
+    yPos: 45,
+  });
+  const [timePerTarget, setTimePerTarget] = useState<number>(0);
 
-  function updateTimePerTargetRef(ms: number): void {
-    timePerTargetRef.current = ms;
-  }
+  const totalClicksRef = useRef<number>(0);
+  const startTimeRef = useRef<number>(0);
+  const totalTimeRef = useRef<number>(0);
 
-  function getTimePerTargetRef(): number {
-    return timePerTargetRef.current;
+  function incrementClicks(): void {
+    totalClicksRef.current = totalClicksRef.current + 1;
   }
 
   return (
     <>
-      <div
-        className="gameWindow"
-        onClick={() => {
-          updateTotalClicksRef();
-        }}
-      >
-        {!gameStarted && targetCounter === 0 && (
+      <div className="gameWindow" onClick={incrementClicks}>
+        {gameStatus === "not started" && (
           <>
             <div className="target-button-group">
               <Button
@@ -65,62 +58,56 @@ const GameWindow = () => {
                 <p>Press the target to begin the game</p>
               </GameInfo>
               <Target
-                style={{ left: "45%", top: "45%" }}
+                style={{
+                  left: targetPos.xPos + "%",
+                  top: targetPos.yPos + "%",
+                }}
                 onClick={() => {
-                  setGameStarted(true);
-                  setXPos(Math.floor(Math.random() * 40) + 30);
-                  setYPos(Math.floor(Math.random() * 60));
-                  setTargetCounter(0);
-                  totalClicksRef.current = 0;
+                  setGameStatus("started");
+                  setTargetPos({
+                    xPos: Math.floor(Math.random() * 40) + 30,
+                    yPos: Math.floor(Math.random() * 60),
+                  });
                   startTimeRef.current = Date.now();
+                  totalClicksRef.current = 0;
                 }}
               />
             </div>
           </>
         )}
-        {gameStarted && targetCounter < targetAmount - 1 && (
+        {gameStatus === "started" && (
           <div className="target-game-area">
             <GameInfo>
               <p>Remaining targets: {targetAmount - targetCounter}</p>
             </GameInfo>
             <Target
-              style={{ left: xPos + "%", top: yPos + "%" }}
+              style={{ left: targetPos.xPos + "%", top: targetPos.yPos + "%" }}
               onClick={() => {
-                setXPos(Math.floor(Math.random() * 40) + 30);
-                setYPos(Math.floor(Math.random() * 60));
-                setTargetCounter((prevTargetCounter) => prevTargetCounter + 1);
+                setTargetPos({
+                  xPos: Math.floor(Math.random() * 40) + 30,
+                  yPos: Math.floor(Math.random() * 60),
+                });
+                setTargetCounter(targetCounter + 1);
+
+                if (targetCounter === targetAmount - 1) {
+                  totalTimeRef.current = Date.now() - startTimeRef.current;
+                  submitTargetScore(
+                    totalTimeRef.current,
+                    totalClicksRef.current + 1,
+                    targetAmount,
+                  );
+                  setGameStatus("ended");
+                  setTimePerTarget(totalTimeRef.current / targetAmount);
+                  setTargetPos({
+                    xPos: 45,
+                    yPos: 30,
+                  });
+                }
               }}
             />
           </div>
         )}
-        {targetCounter === targetAmount - 1 && (
-          <div className="target-game-area">
-            <GameInfo>
-              <p>Remaining targets: {targetAmount - targetCounter}</p>
-            </GameInfo>
-            <Target
-              style={{ left: xPos + "%", top: yPos + "%" }}
-              onClick={() => {
-                setXPos(Math.floor(Math.random() * 40) + 30);
-                setYPos(Math.floor(Math.random() * 60));
-                setTargetCounter((prevTargetCounter) => prevTargetCounter + 1);
-                updateTotalClicksRef();
-                updateTotalClicksRef();
-                totalTimeRef.current = Date.now() - startTimeRef.current;
-                submitTargetScore(
-                  totalTimeRef.current,
-                  totalClicksRef.current,
-                  targetAmount,
-                  1,
-                );
-                setGameEnded(true);
-                setGameStarted(false);
-                updateTimePerTargetRef(totalTimeRef.current / targetAmount);
-              }}
-            />
-          </div>
-        )}
-        {gameEnded && (
+        {gameStatus === "ended" && (
           <>
             <div className="target-button-group">
               <Button
@@ -144,18 +131,22 @@ const GameWindow = () => {
             </div>
             <div className="target-game-area">
               <GameInfo>
-                <p>You took {getTimePerTargetRef().toFixed(0)}ms per target</p>
+                <p>You took {timePerTarget.toFixed(1)}ms per target</p>
                 <p>Press the target to play again</p>
               </GameInfo>
               <Target
-                style={{ left: "45%", top: "30%" }}
+                style={{
+                  left: targetPos.xPos + "%",
+                  top: targetPos.yPos + "%",
+                }}
                 onClick={() => {
-                  setGameStarted(true);
-                  setGameEnded(false);
-                  setXPos(Math.floor(Math.random() * 40) + 30);
-                  setYPos(Math.floor(Math.random() * 60));
+                  setGameStatus("started");
+                  setTargetPos({
+                    xPos: Math.floor(Math.random() * 40) + 30,
+                    yPos: Math.floor(Math.random() * 60),
+                  });
                   setTargetCounter(0);
-                  updateTotalClicksRef(0);
+                  totalClicksRef.current = 0;
                   startTimeRef.current = Date.now();
                 }}
               />

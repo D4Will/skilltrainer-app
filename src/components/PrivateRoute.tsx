@@ -12,12 +12,12 @@ const PrivateRoute = ({ children }: Props) => {
   const nav = useNavigate();
 
   useEffect(() => {
-    if (!auth.authenticated) {
+    if (auth.loaded && !auth.authenticated) {
       nav("/login");
     }
   });
 
-  return children;
+  return <>{auth.authenticated && auth.loaded && children}</>;
 };
 
 export default PrivateRoute;

@@ -1,6 +1,8 @@
 
 const BASE_URL = "http://127.0.0.1:8000/";
 const SUBMIT_TARGET_SCORE_URL = `${BASE_URL}games/target-scores/`;
+const GET_TARGET_SCORE_URL = `${BASE_URL}games/target-scores/`;
+const GET_TARGET_AGGREGATION_DATA_URL = `${BASE_URL}games/target-average/`;
 const LOGIN_URL = `${BASE_URL}api/token/`;
 const REFRESH_URL = `${BASE_URL}api/token/refresh/`
 const REGISTER_URL = `${BASE_URL}register/`;
@@ -10,8 +12,7 @@ const AUTHENTICATE_URL = `${BASE_URL}authenticated/`;
 export async function submitTargetScore(
     time_elapsed: number,
     clicks: number,
-    targets: number,
-    user: number
+    targets: number
 ): Promise<number | null> {
   let response = await fetch(SUBMIT_TARGET_SCORE_URL, {
     credentials: "include",
@@ -22,14 +23,13 @@ export async function submitTargetScore(
     body: JSON.stringify({
     time_elapsed: time_elapsed / 1000,
     clicks: clicks,
-    targets: targets,
-    user: user,
+    targets: targets
     }),
   })
 
   if (response.status === 401) {
     console.log("access token failed, calling refresh");
-    let refresh_response = await retryWithRefresh(submitTargetScore, [time_elapsed, clicks, targets, user])
+    let refresh_response = await retryWithRefresh(submitTargetScore, [time_elapsed, clicks, targets])
     if(!refresh_response) {
       console.log("refresh failed")
       return null;
@@ -160,6 +160,56 @@ export async function register(
   }
 
   return response.status
+}
+
+export async function getLastTargetScores(): Promise<Response> {
+  let response = await fetch(GET_TARGET_SCORE_URL, {
+    credentials: "include",
+    method: "GET"
+  })
+
+  if (response.status === 401) {
+    let refresh_response = await retryWithRefresh(submitTargetScore)
+
+    if(!refresh_response) {
+      console.log("refresh failed")
+      return response;
+    }
+    else {
+      console.log("refresh succeeded");
+      response = refresh_response;
+    }
+  }
+
+  return response
+}
+
+export async function getTargetScoresAggregation(data_size: number): Promise<Response> {
+  let response = await fetch(GET_TARGET_AGGREGATION_DATA_URL, {
+    credentials: "include",
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      score_amount: data_size
+    })
+  })
+
+  if (response.status === 401) {
+    let refresh_response = await retryWithRefresh(getTargetScoresAggregation, [data_size])
+
+    if(!refresh_response) {
+      console.log("refresh failed")
+      return response;
+    }
+    else {
+      console.log("refresh succeeded");
+      response = refresh_response;
+    }
+  }
+
+  return response
 }
 
 

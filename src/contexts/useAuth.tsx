@@ -4,6 +4,7 @@ import { login, loggedIn, logout } from "../endpoints/api";
 import { useNavigate } from "react-router";
 
 type Auth = {
+  loaded: boolean;
   authenticated: boolean;
   username: string;
   loginUser: Function;
@@ -11,6 +12,7 @@ type Auth = {
 };
 
 const AuthContext = createContext<Auth>({
+  loaded: false,
   authenticated: false,
   username: "user",
   loginUser: () => {},
@@ -22,6 +24,7 @@ interface Props {
 }
 
 const AuthProvider = ({ children }: Props) => {
+  const [loaded, setLoaded] = useState(false);
   const [authenticated, setAuthenticated] = useState(false);
   const [name, setName] = useState("user");
   const nav = useNavigate();
@@ -55,6 +58,7 @@ const AuthProvider = ({ children }: Props) => {
         setAuthenticated(false);
         setName("user");
       }
+      setLoaded(true);
     };
 
     setupAuthentication();
@@ -63,6 +67,7 @@ const AuthProvider = ({ children }: Props) => {
   return (
     <AuthContext
       value={{
+        loaded: loaded,
         authenticated: authenticated,
         username: name,
         loginUser: loginUser,

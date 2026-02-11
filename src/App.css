@@ -1,3 +1,14 @@
+body{
+  background-color: #eeeeee;
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+}
+
+main{
+  margin: 0;
+  height: 100vh;
+  width: 100%;
+}
+
 .target-button-group {
   margin: auto 0 auto 0;
   flex-grow: 0;
@@ -25,6 +36,9 @@
   font-weight: 600;
   border-width: 1px;
   border-color: rgba(255, 215, 0, 1);
+  -webkit-user-select: none; /* Safari */
+  -ms-user-select: none; /* IE 10 and IE 11 */
+  user-select: none; /* Standard syntax */
 }
 
 .target-selector-active {
@@ -38,6 +52,9 @@
   font-weight: 600;
   border-width: 1px;
   border-color: rgba(255, 215, 0, 1);;
+  -webkit-user-select: none; /* Safari */
+  -ms-user-select: none; /* IE 10 and IE 11 */
+  user-select: none; /* Standard syntax */
 }
 
 .target-game-area {
@@ -47,6 +64,10 @@
 .gameinfo {
   text-align: center;
   color: rgb(219, 80, 0);
+  -webkit-user-select: none; /* Safari */
+  -ms-user-select: none; /* IE 10 and IE 11 */
+  user-select: none; /* Standard syntax */
+
 }
 
 .target {
@@ -62,11 +83,12 @@
 
 .navbar {
   display: flex;
-  background-color: rgb(0, 68, 0);
+  background-color: rgb(237, 255, 247);
   padding: 0;
 }
 
 .nav-item {
+  margin: 0;
   padding: 10px 30px 10px 30px;
   text-decoration: none;
   color: rgb(30, 94, 58);
@@ -74,4 +96,56 @@
 
 .nav-item:hover {
   background-color: aquamarine;
+}
+
+.stats-page-layout {
+  margin: 1% 20% 0% 20%;
+  display: grid;
+  grid-template-columns: 15% 85%;
+  grid-template-rows: 15% 10% 75%;
+  height: 100%;
+  background-color:  #ffffff;
+}
+
+.stats-skill-selector {
+  grid-column: 1 / 2;
+  grid-row: 1 / 4;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+}
+
+.stats-skill-item {
+  color:rgb(243, 156, 105);
+  list-style-type: none;
+
+}
+
+.stats-username-area {
+  grid-column: 2 / 3;
+  grid-row: 1 / 2;
+  background-color: rgb(255, 255, 255);
+  font-size: 3em;
+  font-weight: 500;
+  padding: 1% 0% 0% 1%;
+}
+
+.stats-aggregate-area {
+  grid-column: 2 / 3;
+  grid-row: 2 / 3;
+  background-color: bisque;
+}
+
+.stats-aggregate-data {
+  display: flex;
+}
+
+.stats-previous-tests-area {
+  grid-column: 2 / 3;
+  grid-row: 3 / 4;
+  background-color: aqua;
+}
+
+.stats-score-item {
+  display: flex;
 }
