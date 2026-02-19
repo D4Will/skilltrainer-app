@@ -6,6 +6,9 @@ import StatsPage from "./pages/StatsPage";
 import Layout from "./Layout";
 import AuthProvider from "./contexts/useAuth";
 import PrivateRoute from "./components/PrivateRoute";
+import SkillsPage from "./pages/SkillsPage";
+import ReactionPage from "./pages/ReactionPage";
+import TypingPage from "./pages/TypingPage";
 
 function App() {
   return (
@@ -14,7 +17,10 @@ function App() {
         <AuthProvider>
           <Routes>
             <Route element={<Layout />}>
-              <Route path="/" element={<TargetsPage />} />
+              <Route path="/" element={<SkillsPage />} />
+              <Route path="/targets" element={<TargetsPage />} />
+              <Route path="/reaction" element={<ReactionPage />} />
+              <Route path="/typing" element={<TypingPage />} />
               <Route
                 path="/stats"
                 element={

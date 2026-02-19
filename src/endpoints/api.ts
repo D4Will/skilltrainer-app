@@ -29,7 +29,7 @@ export async function submitTargetScore(
 
   if (response.status === 401) {
     console.log("access token failed, calling refresh");
-    let refresh_response = await retryWithRefresh(submitTargetScore, [time_elapsed, clicks, targets])
+    const refresh_response = await retryWithRefresh(submitTargetScore, [time_elapsed, clicks, targets])
     if(!refresh_response) {
       console.log("refresh failed")
       return null;
@@ -85,7 +85,7 @@ export async function loggedIn(): Promise<Response> {
 
   if (response.status === 401) {
 
-    let refresh_response = await retryWithRefresh(loggedIn)
+    const refresh_response = await retryWithRefresh(loggedIn)
 
     if(!refresh_response) {
       console.log("refresh failed")
@@ -115,7 +115,7 @@ export async function logout(): Promise<boolean> {
 
   if (response.status === 401) {
 
-    let refresh_response = await retryWithRefresh(loggedIn)
+    const refresh_response = await retryWithRefresh(loggedIn)
 
     if(!refresh_response) {
       console.log("refresh failed")
@@ -169,7 +169,7 @@ export async function getLastTargetScores(): Promise<Response> {
   })
 
   if (response.status === 401) {
-    let refresh_response = await retryWithRefresh(submitTargetScore)
+    const refresh_response = await retryWithRefresh(submitTargetScore)
 
     if(!refresh_response) {
       console.log("refresh failed")
@@ -197,7 +197,7 @@ export async function getTargetScoresAggregation(data_size: number): Promise<Res
   })
 
   if (response.status === 401) {
-    let refresh_response = await retryWithRefresh(getTargetScoresAggregation, [data_size])
+    const refresh_response = await retryWithRefresh(getTargetScoresAggregation, [data_size])
 
     if(!refresh_response) {
       console.log("refresh failed")
