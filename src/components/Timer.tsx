@@ -23,6 +23,9 @@ const Timer = ({
   }, [selectedTime]);
 
   useEffect(() => {
+    if (gameStatus === "not started") {
+      setCountdown(selectedTime);
+    }
     if (gameStatus === "in progress") {
       console.log("interval started");
       console.log(gameStatus);

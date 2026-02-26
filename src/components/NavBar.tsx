@@ -8,15 +8,16 @@ const NavBar = () => {
 
   return (
     <nav className="navbar">
-      <Link to="/" className="nav-item">
+      <div className="navbar-skills title">Skill Trainer</div>
+      <Link to="/" className="navbar-skills nav-item">
         Skills
       </Link>
-      <Link to="/stats" className="nav-item">
+      <Link to="/stats" className="navbar-stats nav-item">
         Statistics
       </Link>
       {authenticated && loaded && (
         <button
-          className="nav-item"
+          className="navbar-logout nav-item"
           onClick={() => {
             auth.logoutUser();
           }}
@@ -26,14 +27,15 @@ const NavBar = () => {
       )}
       {!authenticated && loaded && (
         <>
-          <Link to="/login" className="nav-item">
+          <Link to="/login" className="navbar-login nav-item">
             Login
           </Link>
-          <Link to="/register" className="nav-item">
+          <Link to="/register" className="navbar-register nav-item">
             Register
           </Link>
         </>
       )}
+      {!loaded && <div className="navbar-stats">Loading...</div>}
     </nav>
   );
 };

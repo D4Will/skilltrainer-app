@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useRef, useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { login, loggedIn, logout } from "../endpoints/api";
 import { useNavigate } from "react-router";
@@ -7,16 +7,16 @@ type Auth = {
   loaded: boolean;
   authenticated: boolean;
   username: string;
-  loginUser: Function;
-  logoutUser: Function;
+  loginUser: (username: string, password: string) => Promise<boolean>;
+  logoutUser: () => Promise<void>;
 };
 
 const AuthContext = createContext<Auth>({
   loaded: false,
   authenticated: false,
   username: "user",
-  loginUser: () => {},
-  logoutUser: () => {},
+  loginUser: async () => false,
+  logoutUser: async () => {},
 });
 
 interface Props {
@@ -29,16 +29,23 @@ const AuthProvider = ({ children }: Props) => {
   const [name, setName] = useState("user");
   const nav = useNavigate();
 
-  const loginUser = async (username: string, password: string) => {
+  const timeOutId = useRef<number>(0);
+
+  const loginUser = async (
+    username: string,
+    password: string,
+  ): Promise<boolean> => {
     const success = await login(username, password);
     if (success) {
       setAuthenticated(true);
       setName(username);
       nav("/");
+      return true;
     }
+    return false;
   };
 
-  const logoutUser = async () => {
+  const logoutUser = async (): Promise<void> => {
     const success = await logout();
     if (success) {
       setAuthenticated(false);
@@ -48,7 +55,7 @@ const AuthProvider = ({ children }: Props) => {
   };
 
   useEffect(() => {
-    const setupAuthentication = async () => {
+    const setupAuthentication = async (): Promise<void> => {
       const loginResponse = await loggedIn();
       if (loginResponse.ok) {
         const loginData = await loginResponse.json();
@@ -58,10 +65,18 @@ const AuthProvider = ({ children }: Props) => {
         setAuthenticated(false);
         setName("user");
       }
+      clearTimeout(timeOutId.current);
       setLoaded(true);
     };
 
+    timeOutId.current = setTimeout(() => {
+      setLoaded(true);
+    }, 5000);
     setupAuthentication();
+
+    return () => {
+      clearTimeout(timeOutId.current);
+    };
   }, []);
 
   return (

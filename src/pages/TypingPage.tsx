@@ -4,14 +4,21 @@ import type { ReactNode, RefObject } from "react";
 import type { KeyboardEvent } from "react";
 import Timer from "../components/Timer";
 import Button from "../components/Button";
+import { submitTypingScore } from "../endpoints/api";
+import { useAuth } from "../contexts/useAuth";
 
 const TypingPage = () => {
-  type status = "not started" | "in progress" | "ended";
+  const auth = useAuth();
+
+  type status = "not started" | "restarted" | "in progress" | "ended";
   type letterStatus = "correct" | "incorrect" | "too_many";
+  type loadStatus = "not saved" | "saving" | "saved";
 
   const [gameStatus, setGameStatus] = useState<status>("not started");
-  // const [displayCharInfo, setDisplayCharInfo] = useState<string>("d");
-  // const [displayTypedWords, setDisplayTypedWords] = useState<string>("");
+  const [loadStatus, setLoadStatus] = useState<loadStatus>("not saved");
+
+  const [restart, setRestart] = useState<boolean>(false);
+
   const [wordNodes, setWordNodes] = useState<ReactNode[]>([]);
   const [selectedTime, setSelectedTime] = useState<number>(15);
   const [capsLock, setCapsLock] = useState<boolean>(false);
@@ -31,9 +38,12 @@ const TypingPage = () => {
   const incorrectChars = useRef<number>(0);
   const missingChars = useRef<number>(0);
   const correctSpaces = useRef<number>(0);
+  const incorrectSpaces = useRef<number>(0);
 
   const typedWord = useRef<string>("");
   const typedWordList = useRef<string[]>([]);
+
+  const restartRef = useRef<HTMLButtonElement>(null);
 
   // Checks for CapsLock being used
   const onKeyUp = useEffectEvent((e: globalThis.KeyboardEvent) => {
@@ -54,8 +64,22 @@ const TypingPage = () => {
 
   // Generates wordList and maps them to HTML elements as wordNodes with refs stores
   // in wordListRefs
+  // Resets all refs needed to track the next game
   useEffect(() => {
     if (gameStatus === "not started") {
+      wordList.current = ["init"];
+      word.current = "";
+      wordIndex.current = 0;
+      wordListRefs.current = [];
+      correctWordsIndexes.current = [];
+      correctChars.current = 0;
+      incorrectChars.current = 0;
+      missingChars.current = 0;
+      correctSpaces.current = 0;
+      incorrectSpaces.current = 0;
+      typedWord.current = "";
+      typedWordList.current = [];
+
       function generateWords(wordAmount: number): string[] {
         const words: string[] = generate({
           exactly: wordAmount,
@@ -88,20 +112,28 @@ const TypingPage = () => {
 
       setWordNodes(nodes);
     }
-  }, [gameStatus]);
+  }, [gameStatus, restart]);
 
-  //Set focus to first word after words are loaded in
+  // Set focus to first word after words are loaded in
   useEffect(() => {
     if (wordNodes.length > 0) {
       setCursor();
     }
   }, [wordNodes]);
 
+  // if gameStatus is ended, caluculate scores and update states before presenting to user
   useEffect(() => {
-    const totalChars =
-      correctChars.current + incorrectChars.current + correctSpaces.current;
-    let count: number = 0;
     if (gameStatus === "ended") {
+      setLoadStatus("not saved");
+
+      const totalChars =
+        correctChars.current +
+        incorrectChars.current +
+        correctSpaces.current +
+        incorrectSpaces.current;
+
+      let count: number = 0;
+
       correctWordsIndexes.current.forEach((index) => {
         count += wordList.current[index].length;
       });
@@ -113,32 +145,20 @@ const TypingPage = () => {
       }
       count += correctSpaces.current;
 
-      const wpm: number = Number(
-        ((count / 5) * (60 / selectedTime)).toFixed(0),
-      );
+      const wpm: number = Math.round((count / 5) * (60 / selectedTime));
 
-      const acc: number = Number(
-        (
+      const acc: number =
+        Math.round(
           ((correctChars.current + correctSpaces.current) / totalChars) *
-          100
-        ).toFixed(1),
-      );
+            100 *
+            10,
+        ) / 10;
 
-      const raw: number = Number(
-        ((totalChars / 5) * (60 / selectedTime)).toFixed(0),
-      );
+      const raw: number = Math.round((totalChars / 5) * (60 / selectedTime));
 
       setWPM(wpm);
       setAccuracy(acc);
       setRawWPM(raw);
-
-      typedWord.current = "";
-      typedWordList.current = [];
-      correctChars.current = 0;
-      incorrectChars.current = 0;
-      correctSpaces.current = 0;
-      correctWordsIndexes.current = [];
-      wordIndex.current = 0;
     }
   }, [gameStatus]);
 
@@ -158,8 +178,11 @@ const TypingPage = () => {
             if (typedWord.current.length < word.current.length) {
               missingChars.current -=
                 word.current.length - typedWord.current.length;
+              incorrectSpaces.current -= 1;
             } else if (typedWord.current === word.current) {
               correctSpaces.current -= 1;
+            } else {
+              incorrectSpaces.current -= 1;
             }
             // Focus last word
             setCursor();
@@ -186,14 +209,21 @@ const TypingPage = () => {
         }
       }
     } else if (e.key === " ") {
+      if (wordIndex.current === wordAmount.current - 1) {
+        e.preventDefault();
+        return;
+      }
       // Check if typedWord is same length as word, if not, remaining chars will count as incorrect
       e.preventDefault();
       if (typedWord.current.length < word.current.length) {
         missingChars.current += word.current.length - typedWord.current.length;
+        incorrectSpaces.current += 1;
         // If typedWord is equal to word, then add wordIndex to correctWordsIndexes
       } else if (typedWord.current === word.current) {
         correctWordsIndexes.current.push(wordIndex.current);
         correctSpaces.current += 1;
+      } else {
+        incorrectSpaces.current += 1;
       }
       // Increment wordIndex
       wordIndex.current += 1;
@@ -235,24 +265,14 @@ const TypingPage = () => {
       }
     } else if (e.shiftKey) {
       // Do nothing for shift
+    } else if (e.key === "Tab") {
+      e.preventDefault();
+      restartRef.current?.focus();
     } else {
       // Key is not space, Backspace, Shift, a number or letter
       // Do nothing
       e.preventDefault();
     }
-
-    // setDisplayTypedWords(
-    //   typedWordList.current.join(" ").concat(" " + typedWord.current),
-    // );
-
-    // setDisplayCharInfo(
-    //   "Correct: " +
-    //     correctChars.current +
-    //     " - Incorrect: " +
-    //     incorrectChars.current +
-    //     " - Missing: " +
-    //     missingChars.current,
-    // );
   }
 
   function setCursor(): void {
@@ -285,6 +305,12 @@ const TypingPage = () => {
   function clearWord(): void {
     const element = wordListRefs.current[wordIndex.current]!.current!;
     if (element.firstChild) element.removeChild(element.firstChild);
+  }
+
+  async function saveScore(): Promise<void> {
+    setLoadStatus("saving");
+    await submitTypingScore(WPM, accuracy, rawWPM, selectedTime);
+    setLoadStatus("saved");
   }
 
   return (
@@ -335,20 +361,66 @@ const TypingPage = () => {
           >
             {wordNodes}
           </div>
+          <button
+            className="typing-restart"
+            onClick={() => {
+              setWordNodes([]);
+              setGameStatus("not started");
+              setRestart((restart) => !restart);
+            }}
+            ref={restartRef}
+          >
+            Restart
+          </button>
         </div>
       )}
       {gameStatus === "ended" && (
         <div className="typing-results-main_grid">
           <div className="typing-results-background" />
           <div className="typing-results-title">Results</div>
-          <button
-            className="typing-results-play_again"
-            onClick={() => {
-              setGameStatus("not started");
-            }}
-          >
-            Play Again
-          </button>
+
+          <div className="typing-button-wrapper">
+            <button
+              className="typing-results-play_again"
+              onClick={() => {
+                setGameStatus("not started");
+              }}
+            >
+              Play Again
+            </button>
+            {auth.authenticated && (
+              <>
+                {loadStatus === "not saved" && (
+                  <button
+                    className="typing-results-save_score"
+                    onClick={saveScore}
+                  >
+                    Save Score
+                  </button>
+                )}
+                {loadStatus === "saving" && (
+                  <button className="typing-results-save_score saving" disabled>
+                    Saving...
+                  </button>
+                )}
+                {loadStatus === "saved" && (
+                  <button className="typing-results-save_score" disabled>
+                    Saved!
+                  </button>
+                )}
+              </>
+            )}
+            {!auth.authenticated && (
+              <button
+                className="typing-results-save_score"
+                title="login to save data"
+                disabled
+              >
+                Save Score
+              </button>
+            )}
+          </div>
+
           <div className="typing-results-wpm">WPM: {WPM}</div>
           <div className="typing-results-accuracy">Accuracy: {accuracy}%</div>
           <div className="typing-results-raw_wpm">Raw WPM: {rawWPM}</div>
@@ -362,29 +434,3 @@ const TypingPage = () => {
 };
 
 export default TypingPage;
-
-/*
-Two state variables - 1 to display generated words as a placeholder
-- 1 to caputre each character typed by user
-
-The user types in a text area with the generated words as the placeholder text
-Another use state or ref varaible (prop ref) will track what word the user is on
-The program will track that each letter typed by the user matches the word the user
-is currently on
-If the user types the word correctly and enters space, 
-the word index var will move to the next words and the user will not be able to go back  
-the next word, otherwise if the user continues to write the word wrong, the cursor will
-stay on that word.
-For every word that the user correctly types, a varaible will increment
-Every char that is typed wrong will be tracked, and every char typed write will be tracked
-when the user is done, those can be used to determine accuracy
-
-WPM will be calculated by taking the number of correct characters in correctly typed words
- and dividing by 5, the average word length
-accuracy is correct characters / correct + incorrect
-raw wpm will be total correct + incorrect characters / 5
-
-
-
-
-*/
