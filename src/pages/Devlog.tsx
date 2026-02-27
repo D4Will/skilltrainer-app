@@ -13,8 +13,9 @@ const Devlog = () => {
         Django DRF. I am aware of many bugs and deficiencies present in the
         currect state of this project, so please be patient and rest assured
         that I am working them out. Also please contact me at{" "}
-        <strong>contact@skilltrainer.gg</strong> if you have any issues with the
-        site or your account, or have any suggestions on what could be improved.
+        <strong>contact@skilltrainer.org</strong> if you have any issues with
+        the site or your account, or have any suggestions on what could be
+        improved.
       </p>
       <h2>Future for this site</h2>
       <p>
@@ -39,7 +40,7 @@ const Devlog = () => {
         <li>Performance optimization</li>
         <li>
           Account deletion page. Currently, send a request to{" "}
-          <strong>contact@skilltrainer.gg</strong>
+          <strong>contact@skilltrainer.org</strong>
         </li>
       </ul>
       <h3>Farther out:</h3>

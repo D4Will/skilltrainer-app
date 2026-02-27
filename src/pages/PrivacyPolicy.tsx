@@ -100,7 +100,7 @@ const PrivacyPolicy = () => {
           <li>Requesting data portability</li>
         </ul>
         To exercise these rights, contact us at:{" "}
-        <strong>contact@skilltrainer.gg</strong>
+        <strong>contact@skilltrainer.org</strong>
       </p>
       <hr></hr>
       <h2>7. Third-Party Links</h2>
@@ -126,7 +126,7 @@ const PrivacyPolicy = () => {
       <p>
         If you have questions about this Privacy Policy, contact us at:
         <br />
-        Email: <strong>contact@skilltrainer.gg</strong>
+        Email: <strong>contact@skilltrainer.org</strong>
       </p>
     </article>
   );
