@@ -9,6 +9,9 @@ const Layout = () => {
       <main>
         <Outlet />
       </main>
+      <div className="size-alert">
+        This website is designed to be viewed on larger displays
+      </div>
       <Footer />
     </>
   );

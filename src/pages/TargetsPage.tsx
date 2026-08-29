@@ -19,7 +19,7 @@ const TargetsPage = () => {
   const [targetCounter, setTargetCounter] = useState<number>(0);
   const [targetPos, setTargetPos] = useState<targetPosition>({
     xPos: 47,
-    yPos: 30,
+    yPos: 45,
   });
   const [loadStatus, setLoadStatus] = useState<loadStatus>("not saved");
 
@@ -58,8 +58,8 @@ const TargetsPage = () => {
       setTime(seconds);
 
       setTargetPos({
-        xPos: 45,
-        yPos: 30,
+        xPos: 47,
+        yPos: 45,
       });
     }
   }, [gameStatus]);
@@ -109,31 +109,29 @@ const TargetsPage = () => {
       <div className="target-game-window">
         {gameStatus === "not started" && (
           <>
-            <div className="target-game-area">
-              <div className="target-game-info">
-                <p>Press the target to begin the game</p>
-              </div>
-              <Target
-                style={{
-                  left: targetPos.xPos + "%",
-                  top: targetPos.yPos + "%",
-                }}
-                onClick={() => {
-                  setGameStatus("started");
-                  setTargetCounter(0);
-                  setTargetPos({
-                    xPos: Math.floor(Math.random() * 56) + 20,
-                    yPos: Math.floor(Math.random() * 66),
-                  });
-                  startTimeRef.current = Date.now();
-                  totalClicksRef.current = 0;
-                }}
-              />
+            <div className="target-game-info">
+              <p>Press the target to begin the game</p>
             </div>
+            <Target
+              style={{
+                left: targetPos.xPos + "%",
+                top: targetPos.yPos + "%",
+              }}
+              onClick={() => {
+                setGameStatus("started");
+                setTargetCounter(0);
+                setTargetPos({
+                  xPos: Math.floor(Math.random() * 65) + 15,
+                  yPos: Math.floor(Math.random() * 65) + 15,
+                });
+                startTimeRef.current = Date.now();
+                totalClicksRef.current = 0;
+              }}
+            />
           </>
         )}
         {gameStatus === "started" && (
-          <div className="target-game-area">
+          <>
             <div className="target-game-info">
               <p>Remaining targets: {targetAmount - targetCounter}</p>
             </div>
@@ -141,8 +139,8 @@ const TargetsPage = () => {
               style={{ left: targetPos.xPos + "%", top: targetPos.yPos + "%" }}
               onClick={() => {
                 setTargetPos({
-                  xPos: Math.floor(Math.random() * 56) + 20,
-                  yPos: Math.floor(Math.random() * 66),
+                  xPos: Math.floor(Math.random() * 65) + 15,
+                  yPos: Math.floor(Math.random() * 65) + 15,
                 });
                 setTargetCounter((c) => c + 1);
 
@@ -152,7 +150,7 @@ const TargetsPage = () => {
                 }
               }}
             />
-          </div>
+          </>
         )}
         {gameStatus === "ended" && (
           <div className="target-results-main_grid">

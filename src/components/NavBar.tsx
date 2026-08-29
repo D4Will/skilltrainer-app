@@ -8,7 +8,13 @@ const NavBar = () => {
 
   return (
     <nav className="navbar">
-      <div className="navbar-skills title">Skill Trainer</div>
+      <Link to="/" className="navbar-logo-wrapper">
+        <img
+          className="navbar-logo"
+          src="skilltrainer-logo.svg"
+          alt="Skill Trainer Logo"
+        />
+      </Link>
       <Link to="/" className="navbar-skills nav-item">
         Skills
       </Link>

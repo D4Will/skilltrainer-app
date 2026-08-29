@@ -2,7 +2,7 @@ import { Link } from "react-router";
 
 const SkillsPage = () => {
   return (
-    <>
+    <div className="skill-main-wrapper">
       <h1 className="skill-skills-title">Skills</h1>
       <div className="skill-wrapper">
         <Link to="/targets" className="skill-item-wrapper">
@@ -16,7 +16,7 @@ const SkillsPage = () => {
         <Link to="/reaction" className="skill-item-wrapper">
           <img
             className="skill-item-img"
-            src="/reactionIcon.png"
+            src="/reactionIcon.svg"
             alt="reaction trainer icon"
           />
           <div className="skill-item-text">Reaction Trainer</div>
@@ -30,7 +30,7 @@ const SkillsPage = () => {
           <div className="skill-item-text">Typing Trainer</div>
         </Link>
       </div>
-    </>
+    </div>
   );
 };
 

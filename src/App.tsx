@@ -17,7 +17,6 @@ import SkillsPage from "./pages/SkillsPage";
 import ReactionPage from "./pages/ReactionPage";
 import TypingPage from "./pages/TypingPage";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
-import Devlog from "./pages/Devlog";
 
 interface Props {
   children: ReactNode;
@@ -56,7 +55,6 @@ function App() {
                 />
                 <Route path="/register" element={<RegisterPage />} />
                 <Route path="/login" element={<LoginPage />} />
-                <Route path="/devlog" element={<Devlog />} />
                 <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               </Route>
             </Routes>
